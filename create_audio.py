@@ -1,6 +1,7 @@
 import numpy as np
 from scipy.io import wavfile
 
+'''Generates pink noise'''
 def generate_pink_noise(durationS, volumeNoise, samplingRate):
     numberOfSamples = int(durationS * samplingRate)
     whiteNoise = np.random.normal(0, 1, numberOfSamples)
@@ -17,11 +18,13 @@ def generate_pink_noise(durationS, volumeNoise, samplingRate):
     pinkNoise = pinkNoise * volumeNoise
     return pinkNoise
 
+'''Generates a cosine tone'''
 def generate_tone(frequency, volume, duration, samplingRate):
     t = np.linspace(0, duration, int(duration * samplingRate), False)
     sine = volume * np.cos(2 * np.pi * frequency * t)
     return sine
 
+'''Applies fading in and out'''
 def apply_fading(data, pauseStartS, pauseEndS, fadeInDurrationS, fadeOutDurrationS, samplingRate):
     numberOfSamples = len(data)
     numberOfPauseStartSamples = int(pauseStartS * samplingRate)
@@ -39,11 +42,13 @@ def apply_fading(data, pauseStartS, pauseEndS, fadeInDurrationS, fadeOutDurratio
     data *= fading
     return data
 
+'''Saves audio file as .wav'''
 def save_audio_file(fileName, data, samplingRate):
     wavFilename = fileName + ".wav"
     wavfile.write(wavFilename, samplingRate, data)
 
 def main():
+    #Parameters
     durationIn = 5.5
     durationOut = 5.5
     samplingRate = 44100
@@ -55,23 +60,27 @@ def main():
     volumeNoise = 0.5
     audioDurationS = 10 * 60
 
+    #Tone definitions
     C1 = 32.7032
     D1 = 36.7081
     E1 = 41.2034
     G1 = 48.9994
 
-    #CEG
+    #Inbreath sound generation
     pinkNoiseIn = generate_pink_noise(durationIn, volumeNoise, samplingRate) + generate_tone(pow(2,2) * G1, volumeTone, durationIn, samplingRate)
     pinkNoiseIn = apply_fading(pinkNoiseIn, pauseStartS, pauseEndS, fadeInDurationS, fadeOutDurationS, samplingRate)
+    
+    #Outbreath sound generation
     pinkNoiseOut = generate_pink_noise(durationOut, volumeNoise, samplingRate) + generate_tone(pow(2,2) * C1, volumeTone, durationOut, samplingRate)
     pinkNoiseOut = apply_fading(pinkNoiseOut, pauseStartS, pauseEndS, fadeInDurationS, fadeOutDurationS, samplingRate)
     
+    #repetitions
     cycle = np.concatenate((pinkNoiseIn, pinkNoiseOut))
-
     numberOfCycles = int(audioDurationS / (durationIn + durationOut))
     cycles = np.zeros((0)) 
     for i in range(0, numberOfCycles):
        cycles = np.concatenate((cycles, cycle))
+    
     #save file
     save_audio_file(str(durationIn) + "_" + str(durationOut), cycles, samplingRate)
 
