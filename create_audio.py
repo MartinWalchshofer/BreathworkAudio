@@ -1,5 +1,6 @@
 import numpy as np
 from scipy.io import wavfile
+from pydub import AudioSegment
 
 '''Generates pink noise'''
 def generate_pink_noise(durationS, volumeNoise, samplingRate):
@@ -45,12 +46,15 @@ def apply_fading(data, pauseStartS, pauseEndS, fadeInDurrationS, fadeOutDurratio
 '''Saves audio file as .wav'''
 def save_audio_file(fileName, data, samplingRate):
     wavFilename = fileName + ".wav"
+    mp3Filename = fileName + ".mp3"
     wavfile.write(wavFilename, samplingRate, data)
+    sound = AudioSegment.from_wav(wavFilename)
+    sound.export(mp3Filename, format="mp3")
 
 def main():
     #Parameters
-    durationIn = 5.5
-    durationOut = 5.5
+    durationIn = 5
+    durationOut = 10
     samplingRate = 44100
     fadeInDurationS = 2
     fadeOutDurationS = 1
@@ -82,7 +86,7 @@ def main():
        cycles = np.concatenate((cycles, cycle))
     
     #save file
-    save_audio_file(str(durationIn) + "_" + str(durationOut), cycles, samplingRate)
+    save_audio_file(str(durationIn) + "_" + str(durationOut), (cycles * 32767).astype(np.int16), samplingRate)
 
 if __name__ == "__main__":
     import sys

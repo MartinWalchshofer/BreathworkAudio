@@ -160,4 +160,5 @@ cython_debug/
 #.idea/
 
 *.wav
+*.mp3
 .DS_Store
